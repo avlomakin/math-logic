@@ -1,5 +1,9 @@
 package com.github.avlomakin
 
+import com.github.avlomakin.dpll.dpll
+import com.github.avlomakin.dpll.model.DpllClause
+import com.github.avlomakin.dpll.model.DpllCnf
+import com.github.avlomakin.dpll.model.Model
 import com.github.avlomakin.model.*
 import org.junit.Test
 import java.util.*

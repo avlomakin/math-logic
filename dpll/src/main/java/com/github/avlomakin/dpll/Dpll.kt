@@ -1,8 +1,8 @@
-package com.github.avlomakin
+package com.github.avlomakin.dpll
 
-import com.github.avlomakin.model.DpllCnf
+import com.github.avlomakin.dpll.model.DpllCnf
 import com.github.avlomakin.model.Literal
-import com.github.avlomakin.model.Model
+import com.github.avlomakin.dpll.model.Model
 import com.github.avlomakin.model.contrary
 
 fun dpll(cnf: DpllCnf, model: Model, level: Int) : Model?  {

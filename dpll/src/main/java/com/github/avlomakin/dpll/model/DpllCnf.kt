@@ -1,5 +1,6 @@
-package com.github.avlomakin.model
+package com.github.avlomakin.dpll.model
 
+import com.github.avlomakin.model.Literal
 import java.util.*
 
 class DpllCnf(
@@ -7,7 +8,7 @@ class DpllCnf(
     val literals: Set<Literal>
 ) {
 
-    fun getClauses() : List<DpllClause>{
+    fun getClauses(): List<DpllClause> {
         return clauses
     }
 
@@ -33,7 +34,7 @@ class DpllCnf(
         return clauses.flatMap { it.getCurrentLiterals() }
             .groupBy { l -> l.id }
             .filter { (_, literals) -> literals.all { it == literals[0] } }
-            .map {it.value[0]}
+            .map { it.value[0] }
     }
 
     fun pushLiteral(literal: Literal, level: Int): DpllCnf {

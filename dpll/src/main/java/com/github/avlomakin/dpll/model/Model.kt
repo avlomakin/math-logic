@@ -1,11 +1,12 @@
-package com.github.avlomakin.model
+package com.github.avlomakin.dpll.model
 
+import com.github.avlomakin.model.Literal
 import kotlin.collections.HashMap
 import kotlin.text.StringBuilder
 
 class Model(private val values: HashMap<Int, Boolean> = HashMap()) {
 
-    fun putLiteral(literal: Literal) : Model {
+    fun putLiteral(literal: Literal): Model {
         values[literal.id] = !literal.negated
         return this
     }
@@ -14,10 +15,10 @@ class Model(private val values: HashMap<Int, Boolean> = HashMap()) {
         return values.keys
     }
 
-    fun toPrettyString(variablePrefix: String = ""): String{
+    fun toPrettyString(variablePrefix: String = ""): String {
         val stringBuilder = StringBuilder()
         stringBuilder.append("Model: ")
-        values.forEach {(id, value) ->
+        values.forEach { (id, value) ->
             stringBuilder.append("${variablePrefix}$id = $value, ")
         }
         stringBuilder.append(" ...")

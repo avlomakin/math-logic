@@ -1,10 +1,17 @@
 package com.github.avlomakin
 
-import com.github.avlomakin.dpll.dpll
+import com.github.avlomakin.dimacs.DimacsParser.Companion.createFromString
+import com.github.avlomakin.dimacs.toDimacs
+import com.github.avlomakin.dpll.DpllUtil.toDpllCNF
+import com.github.avlomakin.dpll.SatDecision.SAT
+import com.github.avlomakin.dpll.SatDecision.UNSAT
 import com.github.avlomakin.dpll.model.DpllClause
 import com.github.avlomakin.dpll.model.DpllCnf
-import com.github.avlomakin.dpll.model.Model
-import com.github.avlomakin.model.*
+import com.github.avlomakin.dpll.solve
+import com.github.avlomakin.model.Literal
+import com.github.avlomakin.model.contrary
+import com.github.avlomakin.tseytin.TseytinTransformationPerformer
+import com.github.avlomakin.util.CnfUtils
 import org.junit.Test
 import java.util.*
 
@@ -26,9 +33,10 @@ class DpllTest {
 
         val cnf = DpllCnf(clauses, setOf(a0, a1, a0Contrary))
 
-        val result = dpll(cnf, Model(), 0)
+        val result = solve(cnf)
 
-        println(result?.toPrettyString("a") ?: "UNSAT")
+        assert(result.decision == SAT)
+        println(result.model!!.toPrettyString("p_"))
     }
 
 
@@ -60,8 +68,70 @@ class DpllTest {
 
         val cnf = DpllCnf(clauses, setOf(a, b, c, d, notA, notB, notC, notD))
 
-        val result = dpll(cnf, Model(), 0)
+        val result = solve(cnf)
 
-        assert(result != null)
+        assert(result.decision == SAT)
+        println(result.model!!.toPrettyString("p_"))
+    }
+
+    @Test
+    fun `test with Tseytin Transformation`(){
+        val formula  = "!((p&q)|!r)"
+        val stringClauses = TseytinTransformationPerformer.transform(formula).clauses
+
+        println("Tseytin Transformation: ")
+        println(stringClauses)
+
+        val (cnf, map) = CnfUtils.toCNF(stringClauses)
+
+        println("Mappings:")
+        println(map.entries.joinToString { "${it.key} : ${it.value}" })
+        println("DIMACS:")
+        println(cnf.toDimacs())
+
+        val result = solve(cnf.toDpllCNF())
+
+        assert(result.decision == SAT)
+        println(result.model!!.toPrettyString("p_"))
+    }
+
+    @Test
+    fun `test unsat`(){
+        val formula  = "p&!p"
+        val context = TseytinTransformationPerformer.transform(formula)
+
+        println("Tseytin Transformation: ")
+        println(context.clauses)
+
+        val (cnf, map) = context.toCNF()
+
+        println("Mappings:")
+        println(map.entries.joinToString { "${it.key} : ${it.value}" })
+        println("DIMACS:")
+        println(cnf.toDimacs())
+
+        val result = solve(cnf.toDpllCNF())
+
+        println(result.decision == UNSAT)
+    }
+
+    @Test
+    fun `shouldn't work if dpll is incorrect`(){
+        val s = """p cnf 4 5
+            -1 2 3 0
+            -1 4 -3 0
+            -4 -2 0
+            -2 3 4 0
+            -4 -3 2 0"""
+
+        val cnf = createFromString(s).getCNF()
+
+        println(cnf.toDimacs())
+
+        val result = solve(cnf.toDpllCNF())
+
+        assert(result.decision == SAT)
+        println(result.model!!.toPrettyString())
+
     }
 }

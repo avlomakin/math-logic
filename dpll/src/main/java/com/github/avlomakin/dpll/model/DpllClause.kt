@@ -19,7 +19,10 @@ class DpllClause(private val literals: Set<Literal>, private val level: Int = 0)
     }
 
     fun getCurrentLiterals(): Set<Literal> {
-        return literals - getAllEliminated()
+        return if (isClauseEliminated())
+            emptySet()
+        else
+            literals - getAllEliminated()
     }
 
     private fun getAllEliminated(): Set<Literal> {
@@ -28,8 +31,7 @@ class DpllClause(private val literals: Set<Literal>, private val level: Int = 0)
 
 
     fun unitPropagate(level: Int, literal: Literal) {
-        if (propagatedLiteral != null)
-            return
+        if (isClauseEliminated()) return
 
         if (getCurrentLiterals().contains(literal)) {
             propagatedLiteral = Pair(level, literal)
@@ -37,6 +39,8 @@ class DpllClause(private val literals: Set<Literal>, private val level: Int = 0)
     }
 
     fun eliminateLiteral(level: Int, literal: Literal) {
+        if (isClauseEliminated()) return
+
         eliminatedLiterals.putIfAbsent(level, HashSet())
 
         if (getCurrentLiterals().contains(literal)) {
@@ -56,5 +60,9 @@ class DpllClause(private val literals: Set<Literal>, private val level: Int = 0)
                 eliminatedLiterals[i] = HashSet()
             }
         }
+    }
+
+    override fun toString(): String {
+        return "${this.literals.joinToString(separator = " ")} 0"
     }
 }

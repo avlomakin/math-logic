@@ -5,8 +5,9 @@ import java.util.*
 
 class DpllCnf(
     private val clauses: Stack<DpllClause>,
-    val literals: Set<Literal>
+    private val literals: Set<Literal>
 ) {
+    val propVariables  = literals.map { it.id }.toSet()
 
     fun getClauses(): List<DpllClause> {
         return clauses

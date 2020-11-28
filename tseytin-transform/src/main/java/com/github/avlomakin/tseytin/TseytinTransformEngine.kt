@@ -3,10 +3,13 @@ package com.github.avlomakin.tseytin
 import com.github.avlomakin.model.*
 import com.github.avlomakin.prop.PropFormulaBaseVisitor
 import com.github.avlomakin.prop.PropFormulaParser.*
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationContext>() {
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     companion object {
         const val VAR_PREFIX = "p_"
@@ -17,6 +20,8 @@ class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationConte
     override fun visitLiteral(ctx: LiteralContext): TseytinTransformationContext {
         val variable = ctx.PROP_VARIABLE().text
         check(!variable.startsWith(VAR_PREFIX)) { "variable name cannot start with '$VAR_PREFIX'" }
+
+        log.debug("${ctx.NOT()?.text ?: ""}$variable generated")
         return TseytinTransformationContext(emptySet(), StringLiteral(variable, ctx.NOT() != null))
     }
 
@@ -30,8 +35,13 @@ class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationConte
         clauses.add(StringClause(setOf(literal.contrary(), left.literal)))
         clauses.add(StringClause(setOf(literal.contrary(), right.literal)))
         clauses.add(StringClause(setOf(literal, left.literal.contrary(), right.literal.contrary())))
+
+        log.debug("new clauses: $clauses")
+
         clauses.addAll(left.clauses)
         clauses.addAll(right.clauses)
+
+        log.debug("all clauses: $clauses")
 
         return TseytinTransformationContext(clauses, literal)
     }
@@ -54,8 +64,13 @@ class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationConte
         clauses.add(StringClause(setOf(literal.contrary(), left.literal, right.literal)))
         clauses.add(StringClause(setOf(literal, left.literal.contrary())))
         clauses.add(StringClause(setOf(literal, right.literal.contrary())))
+
+        log.debug("new clauses: $clauses")
+
         clauses.addAll(left.clauses)
         clauses.addAll(right.clauses)
+
+        log.debug("all clauses: $clauses")
 
         return TseytinTransformationContext(clauses, literal)
     }

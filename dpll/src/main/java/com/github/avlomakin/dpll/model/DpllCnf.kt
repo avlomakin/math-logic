@@ -5,9 +5,9 @@ import java.util.*
 
 class DpllCnf(
     private val clauses: Stack<DpllClause>,
-    private val literals: Set<Literal>
+    literals: Set<Literal>
 ) {
-    val propVariables  = literals.map { it.id }.toSet()
+    val propVariables = literals.map { it.id }.toSet()
 
     fun getClauses(): List<DpllClause> {
         return clauses
@@ -22,7 +22,7 @@ class DpllCnf(
     }
 
     fun getUnits(): List<Literal> {
-        return clauses.mapNotNull { clause ->
+        return clauses.filter { !it.isClauseEliminated() }.mapNotNull { clause ->
             if (clause.isUnit()) {
                 clause.getCurrentLiterals().first()
             } else {
@@ -32,7 +32,7 @@ class DpllCnf(
     }
 
     fun getPureLiterals(): List<Literal> {
-        return clauses.flatMap { it.getCurrentLiterals() }
+        return clauses.filter { !it.isClauseEliminated() }.flatMap { it.getCurrentLiterals() }
             .groupBy { l -> l.id }
             .filter { (_, literals) -> literals.all { it == literals[0] } }
             .map { it.value[0] }
@@ -44,7 +44,8 @@ class DpllCnf(
     }
 
     fun popLiteral(): DpllCnf {
-        clauses.pop()
+        val clause = clauses.pop()
+        clauses.forEach { it.rollback(clause.level - 1) }
         return this
     }
 

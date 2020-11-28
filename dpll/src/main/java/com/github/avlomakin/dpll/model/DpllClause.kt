@@ -3,13 +3,13 @@ package com.github.avlomakin.dpll.model
 import com.github.avlomakin.model.Literal
 import kotlin.collections.HashMap
 
-class DpllClause(private val literals: Set<Literal>, private val level: Int = 0) {
+class DpllClause(private val literals: Set<Literal>, val level: Int = 0) {
 
     private var propagatedLiteral: Pair<Int, Literal>? = null
     private val eliminatedLiterals = HashMap<Int, HashSet<Literal>>()
 
     fun isAllLiteralsEliminated(): Boolean {
-        return literals.map { it.id } == eliminatedLiterals.values.flatten()
+        return getCurrentLiterals().isEmpty()
     }
 
     fun isClauseEliminated() = propagatedLiteral != null
@@ -19,10 +19,7 @@ class DpllClause(private val literals: Set<Literal>, private val level: Int = 0)
     }
 
     fun getCurrentLiterals(): Set<Literal> {
-        return if (isClauseEliminated())
-            emptySet()
-        else
-            literals - getAllEliminated()
+        return literals - getAllEliminated()
     }
 
     private fun getAllEliminated(): Set<Literal> {
@@ -49,20 +46,21 @@ class DpllClause(private val literals: Set<Literal>, private val level: Int = 0)
     }
 
     fun rollback(level: Int) {
-        check(level <= this.level) { "rollback level $level is greater than current clause level ${this.level}" }
-
         if (propagatedLiteral != null && propagatedLiteral!!.first > level) {
             propagatedLiteral = null
         }
 
-        for (i in (level + 1)..this.level) {
-            if (eliminatedLiterals.containsKey(i)) {
+        for (i in this.eliminatedLiterals.keys.filter { it > level }) {
                 eliminatedLiterals[i] = HashSet()
-            }
         }
     }
 
     override fun toString(): String {
-        return "${this.literals.joinToString(separator = " ")} 0"
+        val dimacs = "${this.getCurrentLiterals().joinToString(separator = " ")} 0"
+        return if(isClauseEliminated()) {
+            return "ELIMINATED ($dimacs)"
+        } else {
+            dimacs
+        }
     }
 }

@@ -1,6 +1,5 @@
 package com.github.avlomakin.dpll
 
-import com.github.avlomakin.dpll.DpllUtil.toDpllCNF
 import com.github.avlomakin.dpll.SatDecision.SAT
 import com.github.avlomakin.dpll.SatDecision.UNSAT
 import com.github.avlomakin.dpll.model.DpllCnf
@@ -19,12 +18,12 @@ fun dpll(cnf: DpllCnf, model: Model, level: Int): Model? {
 
     cnf.getUnits().forEach { literal ->
         unitPropagate(cnf, literal, level)
-        model.putLiteral(literal)
+        model.pushLiteral(literal)
     }
 
     cnf.getPureLiterals().forEach { literal ->
         unitPropagate(cnf, literal, level)
-        model.putLiteral(literal)
+        model.pushLiteral(literal)
     }
 
     if (cnf.isEmptySet()) {
@@ -38,11 +37,17 @@ fun dpll(cnf: DpllCnf, model: Model, level: Int): Model? {
     val nextLiteral = Literal(id, false)
     val nextLevel = level + 1
 
-    return dpll(cnf.pushLiteral(nextLiteral, nextLevel), model.putLiteral(nextLiteral), nextLevel) ?: run {
-        cnf.popLiteral()
+    var result = dpll(cnf.pushLiteral(nextLiteral, nextLevel), model, nextLevel)
+    cnf.popLiteral()
+    model.removeValue(id)
+    if (result == null) {
         val contrary = nextLiteral.contrary()
-        dpll(cnf.pushLiteral(contrary, nextLevel), model.putLiteral(contrary), nextLevel)
+        result = dpll(cnf.pushLiteral(contrary, nextLevel), model, nextLevel)
+        cnf.popLiteral()
+        model.removeValue(id)
     }
+
+    return result
 }
 
 fun chooseNextLiteralId(cnf: DpllCnf, model: Model): Int? {

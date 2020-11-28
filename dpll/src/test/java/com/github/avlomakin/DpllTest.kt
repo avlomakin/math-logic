@@ -134,4 +134,71 @@ class DpllTest {
         println(result.model!!.toPrettyString())
 
     }
+
+    @Test
+    fun `simple mine sweep DIMACS`(){
+        val s = """p cnf 12 28
+        1 -2 -3 0
+        -4 -5 0
+        2 -6 -7 0
+        6 -8 0
+        -5 3 0
+        -5 9 0
+        10 -3 0
+        10 -9 0
+        -11 8 0
+        -7 4 0
+        -12 8 0
+        -2 6 0
+        -1 3 0
+        -1 2 0
+        4 5 12 0
+        7 -4 11 0
+        12 -3 -8 0
+        5 -3 -9 0
+        -10 3 9 0
+        6 -10 0
+        -12 3 0
+        -6 10 8 0
+        11 -9 -8 0
+        -2 7 0
+        -11 9 0
+        -7 -11 0
+        -4 -12 0
+        1 0""".trimIndent()
+
+        val cnf = createFromString(s).getCNF()
+
+        println(cnf.toDimacs())
+
+        val result = solve(cnf.toDpllCNF())
+
+        assert(result.decision == SAT)
+        println(result.model!!.toPrettyString())
+
+    }
+
+
+    @Test
+    fun `simple mine sweep model test`(){
+        val formula = "((a_0_1)|(a_1_0)|(a_1_1)) & (!((a_0_1)&(a_1_0))&!((a_0_1)&(a_1_1))&!((a_1_0)&(a_1_1)))&a_0_1 "
+//        val formula = "(a_0 | a_1 | a_2) & (!a_0 | !a_2) & (!a_0 | !a_1) & a_2"
+        val context = TseytinTransformationPerformer.transform(formula)
+
+        println("Tseytin Transformation: ")
+        println(context.clauses)
+
+        val (cnf, map) = context.toCNF()
+
+        println("Mappings:")
+        println(map.entries.joinToString { "${it.key} : ${it.value}" })
+        println("DIMACS:")
+        println(cnf.toDimacs())
+
+        val result = solve(cnf.toDpllCNF())
+
+        assert(result.decision == SAT)
+        println(result.model!!.toPrettyString(map.entries.map{Pair(it.value, it.key)}.toMap()))
+
+    }
 }

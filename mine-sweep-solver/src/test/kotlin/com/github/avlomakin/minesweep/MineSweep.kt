@@ -23,7 +23,7 @@ class MineSweepTest(val params: Pair<Pair<Int, Int>, Boolean>) {
     }
 
     @Test
-    fun `safe field`(){
+    fun `check field safety`(){
         val field = """
             1 * x
             x 2 x

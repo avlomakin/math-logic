@@ -21,7 +21,7 @@ class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationConte
         val variable = ctx.PROP_VARIABLE().text
         check(!variable.startsWith(VAR_PREFIX)) { "variable name cannot start with '$VAR_PREFIX'" }
 
-        log.debug("${ctx.NOT()?.text ?: ""}$variable generated")
+        log.trace("${ctx.NOT()?.text ?: ""}$variable generated")
         return TseytinTransformationContext(emptySet(), StringLiteral(variable, ctx.NOT() != null))
     }
 
@@ -36,12 +36,12 @@ class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationConte
         clauses.add(StringClause(setOf(literal.contrary(), right.literal)))
         clauses.add(StringClause(setOf(literal, left.literal.contrary(), right.literal.contrary())))
 
-        log.debug("new clauses: $clauses")
+        log.trace("new clauses: $clauses")
 
         clauses.addAll(left.clauses)
         clauses.addAll(right.clauses)
 
-        log.debug("all clauses: $clauses")
+        log.trace("all clauses: $clauses")
 
         return TseytinTransformationContext(clauses, literal)
     }
@@ -65,12 +65,12 @@ class TseytinTransformEngine : PropFormulaBaseVisitor<TseytinTransformationConte
         clauses.add(StringClause(setOf(literal, left.literal.contrary())))
         clauses.add(StringClause(setOf(literal, right.literal.contrary())))
 
-        log.debug("new clauses: $clauses")
+        log.trace("new clauses: $clauses")
 
         clauses.addAll(left.clauses)
         clauses.addAll(right.clauses)
 
-        log.debug("all clauses: $clauses")
+        log.trace("all clauses: $clauses")
 
         return TseytinTransformationContext(clauses, literal)
     }

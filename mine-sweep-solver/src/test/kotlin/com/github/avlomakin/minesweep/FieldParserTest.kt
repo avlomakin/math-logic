@@ -16,7 +16,7 @@ class FieldParserTest {
             1 x x
         """.trimIndent().split("\n").map { line -> line.split(" ")}
         val formula = parseField(field)
-        val answer = isFieldSafe(formula, 1, 0)
+        val answer = isFieldSafe(formula, 2, 1)
         println(answer)
     }
 

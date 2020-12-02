@@ -17,13 +17,15 @@ fun dpll(cnf: DpllCnf, model: Model, level: Int): Model? {
     }
 
     cnf.getUnits().forEach { literal ->
-        unitPropagate(cnf, literal, level)
-        model.pushLiteral(literal)
+        if (!model.containsContraryWithLevel(literal, level)) {
+            unitPropagate(cnf, literal, level)
+            model.pushLiteral(literal, level)
+        }
     }
 
     cnf.getPureLiterals().forEach { literal ->
         unitPropagate(cnf, literal, level)
-        model.pushLiteral(literal)
+        model.pushLiteral(literal, level)
     }
 
     if (cnf.isEmptySet()) {
@@ -39,12 +41,14 @@ fun dpll(cnf: DpllCnf, model: Model, level: Int): Model? {
 
     var result = dpll(cnf.pushLiteral(nextLiteral, nextLevel), model, nextLevel)
     cnf.popLiteral()
-    model.removeValue(id)
     if (result == null) {
+        model.removeLevel(level)
         val contrary = nextLiteral.contrary()
         result = dpll(cnf.pushLiteral(contrary, nextLevel), model, nextLevel)
         cnf.popLiteral()
-        model.removeValue(id)
+        if (result == null) {
+            model.removeLevel(level)
+        }
     }
 
     return result

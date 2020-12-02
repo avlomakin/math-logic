@@ -43,7 +43,7 @@ object FieldParser {
 
         val result = solve(cnf.toDpllCNF())
 
-        log.debug(result.model?.toPrettyString(map.entries.map{Pair(it.value, it.key)}.toMap()))
+        log.debug(result.model?.toPrettyString(map.entries.map { Pair(it.value, it.key) }.toMap()))
 
         return result.decision == UNSAT
     }
@@ -65,7 +65,14 @@ object FieldParser {
         for (i in 0 until n) {
             for (j in 0 until n) {
                 val condition: String = when (val p = field[i][j]) {
-                    "1", "2", "3", "4", "5", "6", "7", "8" -> generateBombsAroundCondition(i, j, n, p.toInt(), allKnownBombs, allKnownEmptyCells)
+                    "1", "2", "3", "4", "5", "6", "7", "8" -> generateBombsAroundCondition(
+                        i,
+                        j,
+                        n,
+                        p.toInt(),
+                        allKnownBombs,
+                        allKnownEmptyCells
+                    )
                     "*" -> generateBombFoundCondition(i, j)
                     "." -> generateNoBombCondition(i, j)
                     "x" -> ""
@@ -120,23 +127,24 @@ object FieldParser {
         val possibleVars = allVars.minus(allKnownEmptyCells)
         val knownBombsInArea = allVars.intersect(allKnownBombs)
 
-        val allPossibleBombPositionVariations =  Sets.combinations(possibleVars, actualBombsCount).mapNotNull { combination ->
-            if(knownBombsInArea.all {bomb -> combination.contains(bomb)}){
-                combination.joinToString(separator = "&", prefix = "(", postfix = ")")
-            } else {
-                null
-            }
-        }.joinToString(separator = "|")
+        val allPossibleBombPositionVariations =
+            Sets.combinations(possibleVars, actualBombsCount).mapNotNull { combination ->
+                if (knownBombsInArea.all { bomb -> combination.contains(bomb) }) {
+                    combination.joinToString(separator = "&", prefix = "(", postfix = ")")
+                } else {
+                    null
+                }
+            }.joinToString(separator = "|")
 
         val noTwoCombinationsAreAllowed = StringBuilder()
         val combinations = Sets.combinations(possibleVars, initialBombsCount).toList()
         for (i1 in combinations.indices) {
             for (j1 in combinations.indices) {
                 if (i1 < j1) {
-                    if(allKnownEmptyCells.any {combinations[i1].contains(it)}){
+                    if (allKnownEmptyCells.any { combinations[i1].contains(it) }) {
                         continue
                     }
-                    if(allKnownEmptyCells.any {combinations[j1].contains(it)}){
+                    if (allKnownEmptyCells.any { combinations[j1].contains(it) }) {
                         continue
                     }
 
@@ -158,7 +166,7 @@ object FieldParser {
     }
 
 
-    private fun getAllPositions(field:  List<List<String>>, vararg items: String) : Set<String>{
+    private fun getAllPositions(field: List<List<String>>, vararg items: String): Set<String> {
         return field.flatMapIndexed { i, row ->
             row.mapIndexedNotNull { j, cell ->
                 if (items.contains(cell)) {
@@ -172,18 +180,19 @@ object FieldParser {
 }
 
 private fun String.joinFormula(separator: String, other: String): String {
-    return if(this.isNotEmpty()){
+    return if (this.isNotEmpty() && other.isNotEmpty()) {
         "$this$separator$other"
+    } else if (this.isNotEmpty()) {
+        this
     } else {
         other
     }
 }
 
 private fun String.parenIfNotEmpty(): String {
-    return if(this.isNotEmpty()){
+    return if (this.isNotEmpty()) {
         "($this)"
-    }
-    else {
+    } else {
         this
     }
 

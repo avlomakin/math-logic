@@ -24,4 +24,11 @@ object CnfUtils {
 
         return Pair(CNF(clauses, stringIdToIntId.values.toSet(), literals), stringIdToIntId)
     }
+
+    fun toCNF(clauses: Collection<Clause>) : CNF{
+        val literals = clauses.flatMap { it.literals}.toSet()
+        val propVariables = literals.map { it.id }.toSet()
+
+        return CNF(clauses.toSet(), propVariables, literals)
+    }
 }

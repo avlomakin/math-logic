@@ -11,6 +11,7 @@
         <module>dpll</module>
         <module>dimacs</module>
         <module>tseytin-transform</module>
+        <module>max-clique</module>
     </modules>
     <packaging>pom</packaging>
 

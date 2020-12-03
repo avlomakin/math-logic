@@ -7,7 +7,7 @@ import com.github.avlomakin.model.Literal
 import com.github.avlomakin.dpll.model.Model
 import com.github.avlomakin.model.contrary
 
-fun dpll(cnf: DpllCnf, model: Model, level: Int): Model? {
+fun dpll(cnf: DpllCnf, model: Model, level: Int, stat: DpllStat): Model? {
 
     if (cnf.isEmptySet()) {
         return model
@@ -39,28 +39,30 @@ fun dpll(cnf: DpllCnf, model: Model, level: Int): Model? {
     val nextLiteral = Literal(id, false)
     val nextLevel = level + 1
 
-    var result = dpll(cnf.pushLiteral(nextLiteral, nextLevel), model, nextLevel)
-    cnf.popLiteral()
+    var result = nextGuess(cnf, nextLiteral, nextLevel, stat, model)
+
     if (result == null) {
-        model.removeLevel(level)
         val contrary = nextLiteral.contrary()
-        result = dpll(cnf.pushLiteral(contrary, nextLevel), model, nextLevel)
-        cnf.popLiteral()
-        if (result == null) {
-            model.removeLevel(level)
-        }
+        result = nextGuess(cnf, contrary, nextLevel, stat, model)
     }
 
     return result
 }
 
-fun chooseNextLiteralId(cnf: DpllCnf, model: Model): Int? {
-    val unassignedLiterals = cnf.propVariables.toList() - model.getVariableIdsWithValues()
-    return if (unassignedLiterals.isEmpty()) {
-        null
-    } else {
-        unassignedLiterals[0]
+private fun nextGuess(cnf: DpllCnf, nextLiteral: Literal, nextLevel: Int, stat: DpllStat, model: Model): Model? {
+    cnf.pushLiteral(nextLiteral, nextLevel)
+    stat.pushLiteral(nextLiteral)
+    val result = dpll(cnf, model, nextLevel, stat)
+    cnf.popLiteral()
+    stat.popLiteral()
+    if (result == null) {
+        model.removeLevel(nextLevel)
     }
+    return result
+}
+
+fun chooseNextLiteralId(cnf: DpllCnf, model: Model): Int? {
+    return (cnf.propVariables.toList() - model.getVariableIdsWithValues()).firstOrNull()
 }
 
 fun unitPropagate(cnf: DpllCnf, literal: Literal, level: Int) {
@@ -80,6 +82,6 @@ class SatResult(
 )
 
 fun solve(dpllCnf: DpllCnf): SatResult {
-    val model = dpll(dpllCnf, Model(), 0)
+    val model = dpll(dpllCnf, Model(), 0, DpllStat())
     return SatResult(if (model == null) UNSAT else SAT, model)
 }

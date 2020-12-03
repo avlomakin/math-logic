@@ -270,7 +270,6 @@ class DpllTest {
     @Test
     fun `simple mine sweep model test`(){
         val formula = "((a_0_1)|(a_1_0)|(a_1_1)) & (!((a_0_1)&(a_1_0))&!((a_0_1)&(a_1_1))&!((a_1_0)&(a_1_1)))&a_0_1 "
-//        val formula = "(a_0 | a_1 | a_2) & (!a_0 | !a_2) & (!a_0 | !a_1) & a_2"
         val context = TseytinTransformationPerformer.transform(formula)
 
         println("Tseytin Transformation: ")

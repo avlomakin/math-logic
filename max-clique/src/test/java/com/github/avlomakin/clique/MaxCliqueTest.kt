@@ -15,7 +15,6 @@ class MaxCliqueTest(val params: Pair<Int, Int>) {
             return listOf(
                 1 to 2,
                 2 to 5,
-                3 to 10
             )
         }
 
